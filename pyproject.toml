@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "transaction-classifier"
+version = "0.1.0"
+description = ""
+authors = ["Fernando Antunes <ferantunesdev@gmail.com>"]
+readme = "README.md"
+packages = [{include = "transaction_classifier"}]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+scikit-learn = "^1.6.1"
+pandas = "^2.2.3"
+fastapi = "^0.115.12"
+uvicorn = "^0.34.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
