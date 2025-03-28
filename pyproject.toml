@@ -10,8 +10,10 @@ packages = [{include = "transaction_classifier"}]
 python = "^3.13"
 scikit-learn = "^1.6.1"
 pandas = "^2.2.3"
-fastapi = "^0.115.12"
+fastapi = {extras = ["all"], version = "^0.115.12"}
 uvicorn = "^0.34.0"
+python-dotenv = "^1.1.0"
+python-jose = "^3.4.0"
 
 
 [build-system]
