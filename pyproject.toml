@@ -17,6 +17,10 @@ python-jose = "^3.4.0"
 requests = "^2.32.3"
 
 
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

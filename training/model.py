@@ -1,6 +1,7 @@
 import os
-import pandas as pd
+
 import joblib
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
@@ -8,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputClassifier
 
 from training.data_fetcher import get_data
+
 
 class TransactionClassifier:
     debug = True
@@ -22,7 +24,7 @@ class TransactionClassifier:
 
     def train_model(self):
         """
-        Função para processar dados e treinar o modelo
+        Função para processar dados e treinar o modelo para o usuário
         """
         transactions = get_data('transactions')
         transactions_df = pd.DataFrame(transactions)
@@ -46,7 +48,6 @@ class TransactionClassifier:
         # Treinando o modelo
         model = MultiOutputClassifier(RandomForestClassifier(n_estimators=100, random_state=42))
         model.fit(x_train, y_train)
-
 
         os.makedirs(self.model_dir, exist_ok=True)
         joblib.dump(model, self.model_path)
@@ -80,7 +81,6 @@ class TransactionClassifier:
         if self.debug:
             print('Modelo carregado com sucesso')
 
-
     def predict(self, description, value):
         """
         Faz uma previsão de categoria e subcategoria para uma descrição dada.
@@ -93,10 +93,7 @@ class TransactionClassifier:
             self.load()
 
         description_matrix = self.vectorizer.transform([description])
-        x = pd.concat([
-            pd.DataFrame(description_matrix.toarray()),
-            pd.DataFrame([[value]], columns=['value'])
-        ], axis=1)
+        x = pd.concat([pd.DataFrame(description_matrix.toarray()), pd.DataFrame([[value]], columns=['value'])], axis=1)
         x.columns = x.columns.astype(str)
 
         prediction = self.model.predict(x)
