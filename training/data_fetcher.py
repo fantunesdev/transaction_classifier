@@ -11,7 +11,6 @@ def get_data(endpoint: str, token: str):
     url = API_URL + endpoint
     headers = {'Authorization': f'Bearer {token}'}
     response = requests.get(url, headers=headers, timeout=5)
-    print('oi')
 
     if response.status_code == 200:
         return response.json()
