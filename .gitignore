@@ -175,4 +175,8 @@ pyrightconfig.json
 
 .vscode
 
+# Arquivos de modelo treinado
+training/model/*.pkl
+*.pkl
+
 # End of https://www.toptal.com/developers/gitignore/api/python

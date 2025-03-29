@@ -9,5 +9,4 @@ def read_root(payload: dict = Depends(verify_token)):
     """
     Exibe uma mensagem de boas vindas para o usuário autenticado.
     """
-    print(payload)
     return {'message': 'Seja bem vindo ao Transaction Classifier API!'}
