@@ -22,11 +22,11 @@ class TransactionClassifier:
         self.vectorizer = None
         self.vectorizer_path = f'{self.model_dir}{user_id}_vectorizer.pkl'
 
-    def train_model(self):
+    def train_model(self, token):
         """
         Função para processar dados e treinar o modelo para o usuário
         """
-        transactions = get_data('transactions')
+        transactions = get_data('transactions', token)
         transactions_df = pd.DataFrame(transactions)
 
         # Transformar a coluna 'description' em uma representação numérica usando TF-IDF

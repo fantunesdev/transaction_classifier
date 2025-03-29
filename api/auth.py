@@ -1,9 +1,10 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, Header, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from jose.exceptions import ExpiredSignatureError
 
 load_dotenv()
 
@@ -21,9 +22,19 @@ def verify_token(token: str = Depends(OAUTH2_SCHEME)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except JWTError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Token inválido ou expirado',
-            headers={'WWW-Authenticate': 'Bearer'},
-        ) from exc
+    except ExpiredSignatureError as e:
+        raise HTTPException(status_code=401, detail="Token expirado") from e
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail="Token inválido") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+def get_token_from_header(authorization: str = Header(None)):
+    """
+    Extrai o token do header.
+    """
+    if authorization is None:
+        raise HTTPException(status_code=400, detail="Token não fornecido")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=400, detail="Token mal formado")
+    return authorization[7:]

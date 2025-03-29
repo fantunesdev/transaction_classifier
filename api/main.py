@@ -3,18 +3,19 @@ from fastapi import Body, Depends, FastAPI, HTTPException
 from api.auth import verify_token
 from schemas.transaction import Transaction
 from training.model import TransactionClassifier
+from api.auth import get_token_from_header
 
 app = FastAPI()
 
 
 @app.post('/train/{user_id}')
-async def train_model(user_id: int, payload: dict = Depends(verify_token)):
+async def train_model(user_id: int, payload: dict = Depends(verify_token), token: str = Depends(get_token_from_header)):
     """
     Processa os dados e treina um modelo para o usuário
     """
     try:
         classifier = TransactionClassifier(user_id)
-        classifier.train_model()
+        classifier.train_model(token)
         return {'message': f'Modelo do usuário {user_id} treinado com sucesso!'}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
