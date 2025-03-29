@@ -12,6 +12,9 @@ from training.data_fetcher import get_data
 
 
 class TransactionClassifier:
+    """
+    Classe responsável por fazer o treinamento ou a predição
+    """
     debug = True
     model_dir = 'training/model/'
 
