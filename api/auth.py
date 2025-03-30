@@ -18,6 +18,8 @@ ALGORITHM = os.getenv('ALGORITHM', 'HS256')
 def verify_token(token: str = Depends(OAUTH2_SCHEME)):
     """
     Verifica se a requisição possui o token de autentificação.
+
+    :token: str - Um token JWT criado pela aplicação Django que será usado na autentificação.
     """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -32,6 +34,8 @@ def verify_token(token: str = Depends(OAUTH2_SCHEME)):
 def get_token_from_header(authorization: str = Header(None)):
     """
     Extrai o token do header.
+
+    :authorization: str - o Header da requisição.
     """
     if authorization is None:
         raise HTTPException(status_code=400, detail="Token não fornecido")
