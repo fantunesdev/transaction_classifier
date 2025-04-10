@@ -34,9 +34,6 @@ async def predict(user_id: int, transaction: Transaction, payload: dict = Depend
     try:
         classifier = TransactionClassifier(user_id)
         result = classifier.predict(transaction.description, transaction.category or '')
-        return {
-            'category_id': result['category_id'],
-            'subcategory_id': result['subcategory_id']
-        }
+        return {'category_id': result['category_id'], 'subcategory_id': result['subcategory_id']}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

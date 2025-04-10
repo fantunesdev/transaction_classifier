@@ -25,11 +25,12 @@ def verify_token(token: str = Depends(OAUTH2_SCHEME)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except ExpiredSignatureError as e:
-        raise HTTPException(status_code=401, detail="Token expirado") from e
+        raise HTTPException(status_code=401, detail='Token expirado') from e
     except JWTError as e:
-        raise HTTPException(status_code=401, detail="Token inválido") from e
+        raise HTTPException(status_code=401, detail='Token inválido') from e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
+
 
 def get_token_from_header(authorization: str = Header(None)):
     """
@@ -38,7 +39,7 @@ def get_token_from_header(authorization: str = Header(None)):
     :authorization: str - o Header da requisição.
     """
     if authorization is None:
-        raise HTTPException(status_code=400, detail="Token não fornecido")
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=400, detail="Token mal formado")
+        raise HTTPException(status_code=400, detail='Token não fornecido')
+    if not authorization.startswith('Bearer '):
+        raise HTTPException(status_code=400, detail='Token mal formado')
     return authorization[7:]

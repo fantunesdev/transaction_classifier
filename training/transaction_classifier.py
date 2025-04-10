@@ -1,14 +1,15 @@
 import os
 import pickle
 
-from training.pipeline import build_pipeline
 from training.data_fetcher import get_data
+from training.pipeline import build_pipeline
 
 
 class TransactionClassifier:
     """
     Classe responsável por fazer o treinamento ou a predição
     """
+
     debug = True
     model_dir = 'training/model/'
 
@@ -35,19 +36,15 @@ class TransactionClassifier:
             raise ValueError('Não há lançamentos suficientes para treinar o modelo.')
 
         self.subcategories = subcategories
-        self.subcategory_id_to_cat_id = {
-            sub['id']: sub['category'] for sub in subcategories
-        }
+        self.subcategory_id_to_cat_id = {sub['id']: sub['category'] for sub in subcategories}
 
-        category_id_to_description = {
-            cat['id']: cat['description'] for cat in categories
-        }
+        category_id_to_description = {cat['id']: cat['description'] for cat in categories}
 
         # Primeiro: treino com base nas descrições das subcategorias (ajuda como referência)
         for subcategory in subcategories:
             example = {
                 'description': subcategory['description'],
-                'category': category_id_to_description.get(subcategory['category'], '')
+                'category': category_id_to_description.get(subcategory['category'], ''),
             }
             target = subcategory['id']
             self.pipeline.learn_one(example, target)
@@ -56,7 +53,7 @@ class TransactionClassifier:
         for transaction in transactions:
             example = {
                 'description': transaction['description'],
-                'category': category_id_to_description.get(transaction['category'], '')
+                'category': category_id_to_description.get(transaction['category'], ''),
             }
             target = transaction['subcategory']
             self.pipeline.learn_one(example, target)
@@ -65,9 +62,9 @@ class TransactionClassifier:
 
         return {
             'success': True,
-            'message': f'Modelo do usuário {self.user_id} treinado com sucesso! ' \
-                       f'com {len(subcategories)} subcategorias ' \
-                       f'e {len(transactions)} lançamentos.'
+            'message': f'Modelo do usuário {self.user_id} treinado com sucesso! '
+            f'com {len(subcategories)} subcategorias '
+            f'e {len(transactions)} lançamentos.',
         }
 
     def predict(self, description: str, category: str = ''):
@@ -80,17 +77,11 @@ class TransactionClassifier:
         """
         self.load_model()
 
-        example = {
-            'description': description,
-            'category': category
-        }
+        example = {'description': description, 'category': category}
         predicted_subcategory_id = self.pipeline.predict_one(example)
         predicted_category_id = self.subcategory_id_to_cat_id.get(predicted_subcategory_id)
 
-        return {
-            'subcategory_id': predicted_subcategory_id,
-            'category_id': predicted_category_id
-        }
+        return {'subcategory_id': predicted_subcategory_id, 'category_id': predicted_category_id}
 
     def save_model(self):
         """
@@ -99,10 +90,7 @@ class TransactionClassifier:
         os.makedirs(self.model_dir, exist_ok=True)
         filepath = os.path.join(self.model_dir, f'model_user_{self.user_id}.pkl')
         with open(filepath, 'wb') as f:
-            pickle.dump({
-                'pipeline': self.pipeline,
-                'subcategory_map': self.subcategory_id_to_cat_id
-            }, f)
+            pickle.dump({'pipeline': self.pipeline, 'subcategory_map': self.subcategory_id_to_cat_id}, f)
 
         if self.debug:
             print(f'Modelo salvo em {filepath}')

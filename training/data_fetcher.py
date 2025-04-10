@@ -4,6 +4,7 @@ import requests
 
 API_URL = os.getenv('URL')
 
+
 def get_data(endpoint: str, token: str):
     """
     Obtém os dados para treinamento
