@@ -68,21 +68,16 @@ Content-Type: application/json
 ## Instalação local
 
 #### Clone o repositório
-```http
-git clone https://github.com/seu-usuario/transaction-classifier.git
-cd transaction-classifier
-```
+> git clone https://github.com/seu-usuario/transaction-classifier.git
+> cd transaction-classifier
+
 
 #### Crie o ambiente
-```http
-poetry install --no-root
-```
+> poetry install --no-root
 
 
 #### Inicie o servidor
-```http
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8001
-```
+> uvicorn api.main:app --reload --host 0.0.0.0 --port 8001
 
 ## 🧰 Tecnologias utilizadas
 
