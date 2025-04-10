@@ -8,13 +8,12 @@ packages = [{include = "transaction_classifier"}]
 
 [tool.poetry.dependencies]
 python = "^3.13"
-scikit-learn = "^1.6.1"
-pandas = "^2.2.3"
 fastapi = {extras = ["all"], version = "^0.115.12"}
 uvicorn = "^0.34.0"
 python-dotenv = "^1.1.0"
 python-jose = "^3.4.0"
 requests = "^2.32.3"
+river = "^0.22.0"
 
 
 [tool.poetry.group.dev.dependencies]

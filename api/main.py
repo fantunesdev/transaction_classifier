@@ -1,9 +1,8 @@
 from fastapi import Body, Depends, FastAPI, HTTPException
 
-from api.auth import verify_token
+from api.auth import get_token_from_header, verify_token
 from schemas.transaction import Transaction
-from training.model import TransactionClassifier
-from api.auth import get_token_from_header
+from training.transaction_classifier import TransactionClassifier
 
 app = FastAPI()
 
@@ -19,8 +18,7 @@ async def train_model(user_id: int, payload: dict = Depends(verify_token), token
     """
     try:
         classifier = TransactionClassifier(user_id)
-        classifier.train_model(token)
-        return {'message': f'Modelo do usuário {user_id} treinado com sucesso!'}
+        return classifier.train(token)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
@@ -35,7 +33,10 @@ async def predict(user_id: int, transaction: Transaction, payload: dict = Depend
     """
     try:
         classifier = TransactionClassifier(user_id)
-        category, subcategory = classifier.predict(transaction.description, transaction.value)
-        return {'category': str(category), 'subcategory': str(subcategory)}
+        result = classifier.predict(transaction.description, transaction.category or '')
+        return {
+            'category_id': result['category_id'],
+            'subcategory_id': result['subcategory_id']
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

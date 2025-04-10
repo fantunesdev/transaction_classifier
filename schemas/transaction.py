@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class Transaction(BaseModel):
@@ -11,4 +12,4 @@ class Transaction(BaseModel):
     """
 
     description: str
-    value: float
+    category: Optional[str]
