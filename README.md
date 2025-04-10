@@ -68,7 +68,7 @@ Content-Type: application/json
 ## Instalação local
 
 #### Clone o repositório
-> git clone https://github.com/seu-usuario/transaction-classifier.git
+> git clone https://github.com/seu-usuario/transaction-classifier.git  
 > cd transaction-classifier
 
 
