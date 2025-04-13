@@ -13,4 +13,4 @@ class Transaction(BaseModel):
     """
 
     description: str
-    category: Optional[str]
+    category: Optional[str] = None
