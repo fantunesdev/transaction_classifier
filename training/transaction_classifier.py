@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 import pickle
 
 from training.data_fetcher import get_data
@@ -31,18 +31,22 @@ class TransactionClassifier:
         transactions = get_data('transactions', token)
 
         if not categories:
-            raise ValueError('Não foi possível obter as categorias para treinar o modelo. ' \
-            'Verifique se o token é válido')
+            raise ValueError(
+                'Não foi possível obter as categorias para treinar o modelo. ' 'Verifique se o token é válido'
+            )
         if not subcategories:
-            raise ValueError('Não foi possível obter as subcategorias para treinar o modelo. ' \
-            'Verifique se o token é válido')
+            raise ValueError(
+                'Não foi possível obter as subcategorias para treinar o modelo. ' 'Verifique se o token é válido'
+            )
         if not transactions:
-            raise ValueError('Não foi possível obter os lançamentos para treinar o modelo. ' \
-            'Verifique se o token é válido')
+            raise ValueError(
+                'Não foi possível obter os lançamentos para treinar o modelo. ' 'Verifique se o token é válido'
+            )
 
         self.subcategories = subcategories
-        self.subcategory_id_to_category_id = {subcategory['id']: subcategory['category']
-                                              for subcategory in subcategories}
+        self.subcategory_id_to_category_id = {
+            subcategory['id']: subcategory['category'] for subcategory in subcategories
+        }
 
         category_id_to_description = {category['id']: category['description'] for category in categories}
 
@@ -158,10 +162,7 @@ class TransactionClassifier:
 
                 if weight > 0:
                     category_description = category_id_to_description.get(corrected_category, '')
-                    example = {
-                        'description': description,
-                        'category': category_description
-                    }
+                    example = {'description': description, 'category': category_description}
 
                     logging.info('Treinando exemplo %s com peso %d', description, weight)
                     for _ in range(weight):
@@ -174,5 +175,5 @@ class TransactionClassifier:
         return {
             'success': True,
             'message': f'Modelo treinado com sistema de pesos inteligente para o usuário {self.user_id}!',
-            'feedback_ids': feedback_ids
+            'feedback_ids': feedback_ids,
         }
