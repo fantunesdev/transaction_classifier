@@ -1,24 +1,32 @@
 import os
-
 import requests
+from typing import Optional
 
-API_URL = os.getenv('URL')
+from api.oauth2_client import OAuth2Client
+
+API_URL = os.getenv("URL")
 
 
-def get_data(endpoint: str, token: str):
+def get_data(endpoint: str, token: Optional[str] = None):
     """
-    Obtém os dados para treinamento
+    Obtém os dados para treinamento.
 
-    :endpoint: str - o endpoint do recurso. Ex: transactions
-    :token: str - Um token JWT criado pela aplicação Django que será usado na autentificação.
-    :API_URL: str - A URL base da api que está setada no .env. Ex: http://localhost:8000/api/
+    :param endpoint: str - endpoint do recurso (ex: 'transactions/')
+    :param token: str (opcional) - token JWT manual (ex: vindo do Insomnia).
+    :return: dict|None
     """
+    if not token:
+        print("[Data Fetcher] Nenhum token fornecido. Gerando token via OAuth2...")
+        oauth_client = OAuth2Client()
+        token = oauth_client.get_token()
+
     url = API_URL + endpoint
-    headers = {'Authorization': f'Bearer {token}'}
-    response = requests.get(url, headers=headers, timeout=5)
+    headers = {"Authorization": f"Bearer {token}"}
 
-    if response.status_code == 200:
+    try:
+        response = requests.get(url, headers=headers, timeout=5)
+        response.raise_for_status()
         return response.json()
-
-    print(f'Erro ao obter dados de {endpoint}. Status code: {response.status_code}')
-    return None
+    except requests.RequestException as e:
+        print(f"[Data Fetcher] Erro ao acessar {url}: {e}")
+        return None

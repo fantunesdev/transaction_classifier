@@ -14,6 +14,7 @@ python-dotenv = "^1.1.0"
 python-jose = "^3.4.0"
 requests = "^2.32.3"
 river = "^0.22.0"
+redis = "^5.2.1"
 
 
 [tool.poetry.group.dev.dependencies]
