@@ -37,3 +37,18 @@ async def predict(user_id: int, transaction: Transaction, payload: dict = Depend
         return {'category_id': result['category_id'], 'subcategory_id': result['subcategory_id']}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+@app.post('/feedback/{user_id}')
+async def feedback(user_id: int, payload: list = Body(...), token: str = Depends(get_token_from_header)):
+    """
+    Processa os dados para dar feedback para o modelo
+
+    :user_id - Id do usuário.
+    :categorization_feedbacks - Lista de feedbacks
+    :token: str - Um token JWT criado pela aplicação Django que será usado na autentificação.
+    """
+    try:
+        classifier = TransactionClassifier(user_id)
+        return classifier.retrain_from_feedback(payload, token)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
