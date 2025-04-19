@@ -22,6 +22,20 @@ async def train_model(user_id: int, payload: dict = Depends(verify_token), token
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
+@app.post('/feedback/{user_id}')
+async def feedback(user_id: int, feedbacks: list = Body(...), token: str = Depends(get_token_from_header)):
+    """
+    Processa os dados para dar feedback para o modelo
+
+    :user_id - Id do usuário.
+    :categorization_feedbacks - Lista de feedbacks
+    :token: str - Um token JWT criado pela aplicação Django que será usado na autentificação.
+    """
+    try:
+        classifier = TransactionClassifier(user_id)
+        return classifier.retrain_from_feedback(feedbacks, token)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @app.post('/predict/{user_id}')
 async def predict(user_id: int, transaction: Transaction, payload: dict = Depends(verify_token)):
@@ -38,17 +52,19 @@ async def predict(user_id: int, transaction: Transaction, payload: dict = Depend
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
-@app.post('/feedback/{user_id}')
-async def feedback(user_id: int, payload: list = Body(...), token: str = Depends(get_token_from_header)):
+@app.post('/predict-batch/{user_id}')
+async def predict_batch(user_id: int, transactions: list = Body(...), payload: dict = Depends(verify_token)):
     """
-    Processa os dados para dar feedback para o modelo
-
-    :user_id - Id do usuário.
-    :categorization_feedbacks - Lista de feedbacks
-    :token: str - Um token JWT criado pela aplicação Django que será usado na autentificação.
+    
     """
     try:
         classifier = TransactionClassifier(user_id)
-        return classifier.retrain_from_feedback(payload, token)
+        results = []
+
+        for transaction_data in transactions:
+            transaction = Transaction(**transaction_data)
+            prediction = classifier.predict(transaction.description, transaction.category or '')
+            results.append(prediction)
+        return results
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        raise HTTPException (status_code=500, detail=str(e)) from e

@@ -126,7 +126,7 @@ class TransactionClassifier:
         filepath = os.path.join(self.model_dir, f'model_user_{self.user_id}.pk')
         return os.path.exists(filepath)
 
-    def retrain_from_feedback(self, feedback_data: list, token: str):
+    def retrain_from_feedback(self, feedbacks: list, token: str):
         """
         Re-treina o modelo com base nas correções feitas pelo usuário,
         usando pesos inteligentes baseados no histórico de correções.
@@ -139,11 +139,11 @@ class TransactionClassifier:
         # Ids dos feedbacks que serão marcados como já utilizados no banco de dados
         feedback_ids = []
 
-        for item in feedback_data:
-            description = item['description']
-            predicted_subcategory = item.get('predicted_subcategory_id')
-            corrected_category = item.get('corrected_category_id')
-            corrected_subcategory = item.get('corrected_subcategory_id')
+        for feedback in feedbacks:
+            description = feedback['description']
+            predicted_subcategory = feedback.get('predicted_subcategory_id')
+            corrected_category = feedback.get('corrected_category_id')
+            corrected_subcategory = feedback.get('corrected_subcategory_id')
 
             # Verifica se é uma correção real
             is_correction = predicted_subcategory != corrected_subcategory
@@ -166,9 +166,9 @@ class TransactionClassifier:
                     logging.info('Treinando exemplo %s com peso %d', description, weight)
                     for _ in range(weight):
                         self.pipeline.learn_one(example, corrected_subcategory)
-                feedback_ids.append(item.get('id'))
+                feedback_ids.append(feedback.get('id'))
             else:
-                logging.warning('Dados incompletos no item %d: ignorado', item['id'])
+                logging.warning('Dados incompletos no feedback %d: ignorado', feedback['id'])
 
         self.save_model()
         return {
