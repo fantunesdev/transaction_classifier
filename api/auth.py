@@ -8,8 +8,9 @@ from jose.exceptions import ExpiredSignatureError
 
 load_dotenv()
 
-TOKEN_URL = os.getenv('TOKEN_URL')
-OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl=TOKEN_URL)
+SERVER_URL = os.getenv('SERVER_URL')
+token_url = f'{SERVER_URL}/api/token'
+OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl=token_url)
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = os.getenv('ALGORITHM', 'HS256')
