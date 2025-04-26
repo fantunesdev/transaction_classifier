@@ -32,15 +32,15 @@ class TransactionClassifier:
 
         if not categories:
             raise ValueError(
-                'Não foi possível obter as categorias para treinar o modelo. ' 'Verifique se o token é válido'
+                'Não foi possível obter as categorias para treinar o modelo. Verifique se o token é válido'
             )
         if not subcategories:
             raise ValueError(
-                'Não foi possível obter as subcategorias para treinar o modelo. ' 'Verifique se o token é válido'
+                'Não foi possível obter as subcategorias para treinar o modelo. Verifique se o token é válido'
             )
         if not transactions:
             raise ValueError(
-                'Não foi possível obter os lançamentos para treinar o modelo. ' 'Verifique se o token é válido'
+                'Não foi possível obter os lançamentos para treinar o modelo. Verifique se o token é válido'
             )
 
         self.subcategories = subcategories
@@ -140,9 +140,6 @@ class TransactionClassifier:
         categories = get_data('categories', token)
         category_id_to_description = {category['id']: category['description'] for category in categories}
 
-        # Ids dos feedbacks que serão marcados como já utilizados no banco de dados
-        feedback_ids = []
-
         for feedback in feedbacks:
             description = feedback['description']
             predicted_subcategory = feedback.get('predicted_subcategory_id')
@@ -167,7 +164,6 @@ class TransactionClassifier:
                     logging.info('Treinando exemplo %s com peso %d', description, weight)
                     for _ in range(weight):
                         self.pipeline.learn_one(example, corrected_subcategory)
-                feedback_ids.append(feedback.get('id'))
             else:
                 logging.warning('Dados incompletos no feedback %d: ignorado', feedback['id'])
 
@@ -175,5 +171,4 @@ class TransactionClassifier:
         return {
             'success': True,
             'message': f'Modelo treinado com sistema de pesos inteligente para o usuário {self.user_id}!',
-            'feedback_ids': feedback_ids,
         }
