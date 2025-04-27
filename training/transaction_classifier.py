@@ -1,6 +1,7 @@
 import logging
 import os
 import pickle
+from datetime import datetime
 
 from training.data_fetcher import get_data
 from training.pipeline import build_pipeline
@@ -19,6 +20,35 @@ class TransactionClassifier:
         self.subcategories = []
         self.subcategory_id_to_category_id = {}
         self.user_id = user_id
+
+    def status(self):
+        """
+        Função para obter o status de treinamento do modelo do usuário.
+
+        :param token: str - Um token JWT criado pela aplicação Django que será usado na autentificação.
+        """
+        filename = f'model_user_{self.user_id}.pkl'
+        filepath = os.path.join(self.model_dir, filename)
+        try:
+            modification_time = os.path.getmtime(filepath)
+            date = datetime.fromtimestamp(modification_time).strftime('%Y-%m-%d')
+            return {
+                'success': True,
+                'message': 'Dados obtidos com sucesso',
+                'data': {
+                    'status': 'Treinado',
+                    'date': date,
+                }
+            }
+        except FileNotFoundError:
+            return {
+                'success': False,
+                'message': f'Não foi encontrado um arquivo para o usuário {self.user_id}',
+                'data': {
+                    'status': None,
+                    'date': None,
+                }
+            }
 
     def train(self, token: str):
         """

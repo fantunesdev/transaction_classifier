@@ -6,6 +6,14 @@ from training.transaction_classifier import TransactionClassifier
 
 app = FastAPI()
 
+@app.get('/status')
+async def get_status(payload: dict = Depends(verify_token)):
+    """
+    Obtém os dados do status de treinamento do modelo do usuário.
+    """
+    classifier = TransactionClassifier(payload['user_id'])
+    return classifier.status()
+
 
 @app.post('/train')
 async def train_model(payload: dict = Depends(verify_token), token: str = Depends(get_token_from_header)):
