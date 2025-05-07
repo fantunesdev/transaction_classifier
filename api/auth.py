@@ -1,36 +1,33 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from jose.exceptions import ExpiredSignatureError
+from jose import jwt
+
+from training.data_fetcher import get_data
 
 load_dotenv()
 
 SERVER_URL = os.getenv('SERVER_URL')
-token_url = f'{SERVER_URL}/api/token'
-OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl=token_url)
-
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM', 'HS256')
+OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl=f'{SERVER_URL}/api/token')
 
 
 def verify_token(token: str = Depends(OAUTH2_SCHEME)):
     """
-    Verifica se a requisição possui o token de autentificação.
+    Verifica se a requisição possui um token válido (consultando o backend Django)
+    e retorna o payload, sem verificar a assinatura localmente.
 
-    :token: str - Um token JWT criado pela aplicação Django que será usado na autentificação.
+    :param token: str - Token JWT.
+    :return: dict - Payload decodificado do token.
     """
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    token_is_valid = get_data('validate-token', token=token)['valid']
+
+    if token_is_valid:
+        payload = jwt.decode(token, key='', options={"verify_signature": False})
         return payload
-    except ExpiredSignatureError as e:
-        raise HTTPException(status_code=401, detail='Token expirado') from e
-    except JWTError as e:
-        raise HTTPException(status_code=401, detail='Token inválido') from e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Token inválido ou expirado')
 
 
 def get_token_from_header(authorization: str = Header(None)):
