@@ -7,10 +7,15 @@ from training.transaction_classifier import TransactionClassifier
 
 class SubcategoryPredictor(TransactionClassifier):
     """
-    Classe responsável por fazer o treinamento ou a predição
+    Classe responsável por fazer o treinamento ou a predição de subcategorias
     """
+
     type = 'subcategory'
     subcategories = []
+
+    def __init__(self, user_id):
+        super().__init__(user_id)
+        self.pipeline = build_pipeline()
 
     def train(self, token: str):
         """
@@ -34,11 +39,11 @@ class SubcategoryPredictor(TransactionClassifier):
             raise ValueError(
                 'Não foi possível obter os lançamentos para treinar o modelo. Verifique se o token é válido'
             )
+        # Apaga o arquivo para resetar o treinamento
+        self.delete_model()
 
         self.subcategories = subcategories
-        self.extra_state = {
-            subcategory['id']: subcategory['category'] for subcategory in subcategories
-        }
+        self.extra_state = {subcategory['id']: subcategory['category'] for subcategory in subcategories}
 
         category_id_to_description = {category['id']: category['description'] for category in categories}
 
@@ -87,8 +92,11 @@ class SubcategoryPredictor(TransactionClassifier):
 
     def retrain_from_feedback(self, feedbacks: list, token: str):
         """
-        Re-treina o modelo com base nas correções feitas pelo usuário,
-        usando pesos inteligentes baseados no histórico de correções.
+        Re-treina o modelo com base nas correções feitas pelo usuário, usando pesos inteligentes baseados no
+        histórico de correções.
+
+        :param feedbacks: uma lista de feedbacks.
+        :param token: str - Um token JWT criado pela aplicação Django que será usado na autentificação.
         """
         self.load_model()
 

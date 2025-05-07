@@ -3,8 +3,6 @@ import pickle
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-from training.pipelines.subcategory import build_pipeline
-
 
 class TransactionClassifier(ABC):
     """
@@ -15,20 +13,9 @@ class TransactionClassifier(ABC):
     type = None
 
     def __init__(self, user_id):
-        self.pipeline = build_pipeline()
         self.user_id = user_id
         self.model_dir = os.path.join('training', 'model')
         self.extra_state = {}
-        self.actions = {
-            'subcategory_predictor': {
-                'train': True,
-                'feedback': True,
-            },
-            'description_predictor': {
-                'train': False,
-                'feedback': True,
-            }
-        }
 
     def status(self):
         """Obtém o status de treinamento dos modelos."""
@@ -45,7 +32,6 @@ class TransactionClassifier(ABC):
                     'description': f'{name.capitalize()} Predictor',
                     'status': 'Treinado' if is_trained else 'Não treinado',
                     'date': date,
-                    'actions': self.actions[f'{name}_predictor']
                 }
             )
 
@@ -89,6 +75,15 @@ class TransactionClassifier(ABC):
 
         if self.debug:
             print(f'Modelo salvo em {filepath}')
+
+    def delete_model(self):
+        """
+        Apaga o arquivo do modelo treinado, se existir
+        """
+        filepath = os.path.join(self.model_dir, f'{self.type}_model_user_{self.user_id}.pkl')
+
+        if os.path.exists(filepath):
+            os.remove(filepath)
 
     def load_model(self):
         """

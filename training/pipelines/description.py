@@ -1,11 +1,14 @@
-from river import compose, feature_extraction, naive_bayes
+from river import compose, feature_extraction, naive_bayes, preprocessing
 
 
 def build_pipeline():
     """
-    Método que constroi o Pipeline
+    Cria um pipeline de aprendizado de máquina para classificação de transações
+    Usando combinação de BagOfWords e TFIDF para melhor representação do texto
     """
     return compose.Pipeline(
-        feature_extraction.BagOfWords(on='description'),
-        naive_bayes.MultinomialNB()
+        ('tokenizer', feature_extraction.BagOfWords(lowercase=True, strip_accents=True)),
+        ('tfidf', feature_extraction.TFIDF()),
+        ('normalizer', preprocessing.StandardScaler()),
+        ('model', naive_bayes.MultinomialNB()),
     )
