@@ -125,6 +125,6 @@ async def description_predict(transaction: Transaction, payload: dict = Depends(
         classifier = DescriptionPredictor(payload['user_id'])
         result = classifier.predict(transaction.description, transaction.category or '')
         print(result)
-        return {'description': result['prediction']}
+        return {'description': result['prediction'] or transaction.description}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

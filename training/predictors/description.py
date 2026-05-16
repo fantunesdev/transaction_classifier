@@ -22,6 +22,7 @@ class DescriptionPredictor(TransactionClassifier):
         self.min_confidence = 0.3  # Confiança mínima para fazer uma previsão
         self.model = naive_bayes.MultinomialNB()
         self.vectorizer = {}  # Dicionário para armazenar vocabulário
+        self.correction_map = {}  # Mapeia descrições originais para correções exatas
         self.preprocessing_enabled = True  # Habilita ou desabilita o pré-processamento
 
     def ensure_serializable(self, obj):
@@ -102,6 +103,20 @@ class DescriptionPredictor(TransactionClassifier):
 
         return vector
 
+    def correction_key(self, description):
+        """
+        Normaliza a descrição para uso no mapa de correções exatas.
+        """
+        return ' '.join(self.preprocess_text(description).split())
+
+    def register_correction(self, description, corrected_description):
+        """
+        Registra uma correção exata feita pelo usuário.
+        """
+        key = self.correction_key(description)
+        if key:
+            self.correction_map[key] = corrected_description
+
     def train(self, token: str):
         try:
             feedbacks = get_data('categorization-feedback', token)
@@ -114,6 +129,7 @@ class DescriptionPredictor(TransactionClassifier):
             # Limpar modelo e vetorizador
             self.model = naive_bayes.MultinomialNB()
             self.vectorizer = {}
+            self.correction_map = {}
 
             used_feedbacks = 0
             training_data = []
@@ -136,6 +152,7 @@ class DescriptionPredictor(TransactionClassifier):
                         description = feedback['description']
                         vector = self.vectorize_text(description)
                         target = feedback['corrected_description']
+                        self.register_correction(description, target)
 
                         # Treinar o modelo
                         self.model.learn_one(vector, target)
@@ -190,6 +207,16 @@ class DescriptionPredictor(TransactionClassifier):
             print(f"Modelo carregado para {self.user_id}")
 
             print(f"Fazendo previsão para: {description}")
+
+            correction = self.correction_map.get(self.correction_key(description))
+            if correction:
+                print(f"Correção exata encontrada: {correction}")
+                return {
+                    'success': True,
+                    'prediction': correction,
+                    'confidence': 1.0,
+                    'message': 'Correção exata encontrada no histórico de feedback.'
+                }
 
             # Verificar se o vocabulário da descrição está presente no vetor treinado
             tokens = self.preprocess_text(description).split()
@@ -299,6 +326,7 @@ class DescriptionPredictor(TransactionClassifier):
             self.load_model()
 
             correction_counts = {}  # Para contar frequência das correções
+            training_examples = []
 
             used_feedbacks = 0
 
@@ -319,6 +347,8 @@ class DescriptionPredictor(TransactionClassifier):
 
                         # Contar correções para aplicar peso
                         correction_counts[corrected] = correction_counts.get(corrected, 0) + 1
+                        training_examples.append((description, corrected))
+                        self.register_correction(description, corrected)
 
                         used_feedbacks += 1
                     except Exception as e:
@@ -331,14 +361,11 @@ class DescriptionPredictor(TransactionClassifier):
                 }
 
             # Reaplicar os feedbacks com pesos (ex: feedbacks mais frequentes reforçam mais)
-            for feedback in feedbacks:
-                if feedback['description'] != feedback['corrected_description']:
-                    description = feedback['description']
-                    corrected = feedback['corrected_description']
-                    vector = self.vectorize_text(description)
-                    weight = correction_counts[corrected]
-                    for _ in range(weight):
-                        self.model.learn_one(vector, corrected)
+            for description, corrected in training_examples:
+                vector = self.vectorize_text(description)
+                weight = correction_counts[corrected]
+                for _ in range(weight):
+                    self.model.learn_one(vector, corrected)
 
             self.save_model()
 
@@ -361,6 +388,7 @@ class DescriptionPredictor(TransactionClassifier):
         model_data = {
             'model': self.model,
             'vectorizer': self.vectorizer,
+            'correction_map': self.correction_map,
             'preprocessing_enabled': self.preprocessing_enabled
         }
 
@@ -383,6 +411,7 @@ class DescriptionPredictor(TransactionClassifier):
             # Criar modelo vazio
             self.model = naive_bayes.MultinomialNB()
             self.vectorizer = {}
+            self.correction_map = {}
             self.preprocessing_enabled = True
             return
 
@@ -393,6 +422,7 @@ class DescriptionPredictor(TransactionClassifier):
 
         self.model = model_data.get('model', naive_bayes.MultinomialNB())
         self.vectorizer = model_data.get('vectorizer', {})
+        self.correction_map = model_data.get('correction_map', {})
         self.preprocessing_enabled = model_data.get(
             'preprocessing_enabled', True)
 
